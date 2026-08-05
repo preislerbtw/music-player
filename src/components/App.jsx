@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Shuffle, SkipBack, Play, Pause, SkipForward, Repeat, Cast, ListMusic, Volume2, Maximize, } from "lucide-react";
+import { Shuffle, SkipBack, Play, Pause, SkipForward, Repeat, Cast, ListMusic, Volume2, Maximize } from "lucide-react";
 import "../styles/App.css";
 
 function formatTime(seconds) {
@@ -10,20 +10,30 @@ function formatTime(seconds) {
 }
 
 function App() {
-  const [tracks, setTracks] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [selectedFolder, setSelectedFolder] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(0.5);
   const [loading, setLoading] = useState(false);
   const audioRef = useRef(new Audio());
 
+  const tracks = selectedFolder ? selectedFolder.tracks : [];
   const currentTrack = currentIndex >= 0 ? tracks[currentIndex] : null;
 
   const handleImportFolder = async () => {
     const folder = await window.musicAPI.selectFolder();
     if (!folder) return;
+
+    const folderName = folder.split("\\").pop() || folder.split("/").pop();
+
+    // Evita importar a mesma pasta duas vezes
+    if (folders.find((f) => f.path === folder)) {
+      setSelectedFolder(folders.find((f) => f.path === folder));
+      return;
+    }
 
     setLoading(true);
     const filePaths = await window.musicAPI.scanFolder(folder);
@@ -33,8 +43,16 @@ function App() {
       const meta = await window.musicAPI.getTrackMetadata(filePath);
       trackList.push(meta);
     }
-    setTracks(trackList);
+
+    const newFolder = { name: folderName, path: folder, tracks: trackList };
+    const updated = [...folders, newFolder];
+
+    setFolders(updated);
+    setSelectedFolder(newFolder);
+    setCurrentIndex(-1);
     setLoading(false);
+
+    await window.musicAPI.saveLibrary({ folders: updated });
   };
 
   const playTrack = useCallback(
@@ -47,11 +65,12 @@ function App() {
       const url = URL.createObjectURL(blob);
 
       audioRef.current.src = url;
-      audioRef.current.play();
+      audioRef.current.volume = volume;
+      await audioRef.current.play();
       setCurrentIndex(index);
       setIsPlaying(true);
     },
-    [tracks],
+    [tracks, volume],
   );
 
   const togglePlayPause = () => {
@@ -83,9 +102,7 @@ function App() {
   };
 
   const handleVolumeChange = (e) => {
-    const v = Number(e.target.value);
-    audioRef.current.volume = v;
-    setVolume(v);
+    setVolume(Number(e.target.value));
   };
 
   useEffect(() => {
@@ -105,46 +122,82 @@ function App() {
     };
   }, [playNext]);
 
+  useEffect(() => {
+    audioRef.current.volume = volume;
+  }, [volume]);
+
+  // Carrega as pastas salvas ao iniciar
+  useEffect(() => {
+    async function restoreLibrary() {
+      const saved = await window.musicAPI.loadLibrary();
+      if (saved?.folders?.length) {
+        setFolders(saved.folders);
+        setSelectedFolder(saved.folders[0]);
+      }
+    }
+    restoreLibrary();
+  }, []);
+
   return (
     <div className="app">
       <header className="header">
         <h1>My Player</h1>
-        <button
-          className="import-btn"
-          onClick={handleImportFolder}
-          disabled={loading}
-        >
-          {loading ? "Carregando..." : "Importar Pasta"}
+        <button className="import-btn" onClick={handleImportFolder} disabled={loading}>
+          {loading ? "Loading..." : "Import Folder"}
         </button>
       </header>
 
-      <main className="library">
-        {tracks.length === 0 && !loading && (
-          <p className="empty-state">
-            No imported music. Click "Import Folder"..
-          </p>
-        )}
-        <ul className="track-list">
-          {tracks.map((track, index) => (
-            <li
-              key={track.path}
-              className={`track-item ${index === currentIndex ? "active" : ""}`}
-              onClick={() => playTrack(index)}
+      <div className="main-layout">
+        <aside className="sidebar">
+          <p className="sidebar-label">Your Library</p>
+          {folders.length === 0 && (
+            <p className="sidebar-empty">No folders yet.</p>
+          )}
+          {folders.map((folder) => (
+            <div
+              key={folder.path}
+              className={`sidebar-item ${selectedFolder?.path === folder.path ? "active" : ""}`}
+              onClick={() => { setSelectedFolder(folder); setCurrentIndex(-1); }}
             >
-              {track.cover ? (
-                <img src={track.cover} alt="" className="cover" />
-              ) : (
-                <div className="cover placeholder">#</div>
-              )}
-              <div className="track-info">
-                <span className="title">{track.title}</span>
-                <span className="artist">{track.artist}</span>
+              <div className="folder-icon"></div>
+              <div>
+                <div className="folder-name">{folder.name}</div>
+                <div className="folder-count">{folder.tracks.length} músicas</div>
               </div>
-              <span className="duration">{formatTime(track.duration)}</span>
-            </li>
+            </div>
           ))}
-        </ul>
-      </main>
+        </aside>
+
+        <main className="library">
+          {tracks.length === 0 && !loading && (
+            <p className="empty-state">
+              {folders.length === 0
+                ? 'No imported music. Click "Import Folder".'
+                : "Select a folder from the sidebar."}
+            </p>
+          )}
+          <ul className="track-list">
+            {tracks.map((track, index) => (
+              <li
+                key={track.path}
+                className={`track-item ${index === currentIndex ? "active" : ""}`}
+                onClick={() => playTrack(index)}
+              >
+                {track.cover ? (
+                  <img src={track.cover} alt="" className="cover" />
+                ) : (
+                  <div className="cover placeholder">#</div>
+                )}
+                <div className="track-info">
+                  <span className="title">{track.title}</span>
+                  <span className="artist">{track.artist}</span>
+                </div>
+                <span className="duration">{formatTime(track.duration)}</span>
+              </li>
+            ))}
+          </ul>
+        </main>
+      </div>
 
       {currentTrack && (
         <footer className="player-bar">
@@ -167,45 +220,45 @@ function App() {
 
           <div className="player-center">
             <div className="controls">
-              <Shuffle size={16} className="icon-btn"></Shuffle>
-              <SkipBack size={18} className="icon-btn" onClick={playPrev}></SkipBack>
+              <Shuffle size={16} className="icon-btn" />
+              <SkipBack size={18} className="icon-btn" onClick={playPrev} />
               <button className="play-btn" onClick={togglePlayPause}>
-                {isPlaying ? <Pause size={16} /> : <Play size={16}/>}
+                {isPlaying ? <Pause size={16} /> : <Play size={16} />}
               </button>
-              <SkipForward size={18} className="icon-btn" onClick={playNext}></SkipForward>
-              <Repeat size={16} className="icon-btn"></Repeat>
+              <SkipForward size={18} className="icon-btn" onClick={playNext} />
+              <Repeat size={16} className="icon-btn" />
             </div>
 
             <div className="seek">
               <span className="time">{formatTime(progress)}</span>
               <input
-              type="range"
-              className="seek-bar"
-              min="0"
-              max={duration || 0}
-              value={progress}
-              onChange={handleSeek}
-              style={{'--progress': `${duration ? (progress / duration) * 100 : 0}%`}}
-            />
-            <span className="time">{formatTime(duration)}</span>
+                type="range"
+                className="seek-bar"
+                min="0"
+                max={duration || 0}
+                value={progress}
+                onChange={handleSeek}
+                style={{ "--progress": `${duration ? (progress / duration) * 100 : 0}%` }}
+              />
+              <span className="time">{formatTime(duration)}</span>
             </div>
           </div>
 
           <div className="player-right">
-            <Cast size={16} className="icon-btn"></Cast>
-            <ListMusic size={16} className="icon-btn"></ListMusic>
-            <Volume2 size={16} className="icon-btn"></Volume2>
+            <Cast size={16} className="icon-btn" />
+            <ListMusic size={16} className="icon-btn" />
+            <Volume2 size={16} className="icon-btn" />
             <input
-            type="range"
-            className="volume-bar"
-            min="0"
-            max="1"
-            step="0.1"
-            value={volume}
-            onChange={handleVolumeChange}
-            style={{ '--progress': `${volume * 100}%` }}
-          />
-          <Maximize size={16} className="icon-btn" />
+              type="range"
+              className="volume-bar"
+              min="0"
+              max="1"
+              step="0.1"
+              value={volume}
+              onChange={handleVolumeChange}
+              style={{ "--progress": `${volume * 100}%` }}
+            />
+            <Maximize size={16} className="icon-btn" />
           </div>
         </footer>
       )}
