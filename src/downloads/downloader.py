@@ -1,10 +1,12 @@
 from pytubefix.contrib.search import Search
+from dotenv import load_dotenv
 import requests
 import os
 import base64
+load_dotenv()
 
-CLIENT_ID = "7d9cf00fc7d04bc1b20a9f31192ad28b"
-CLIENT_SECRET = "90fd775435b641888b3ead1efafeab87"
+CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 
 def get_token():
