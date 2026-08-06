@@ -356,3 +356,38 @@ body {
   font-size: 11px;
   color: #999;
 }
+
+.context-menu {
+  position: fixed;
+  background: #282828;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  padding: 4px;
+  z-index: 1000;
+  min-width: 180px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.context-menu-item:hover {
+  background: #3a3a3a;
+}
+
+.context-menu-item.delete:hover {
+  background: #01ff6b;
+  color: #298b4b;
+}

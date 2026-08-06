@@ -1,5 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Shuffle, SkipBack, Play, Pause, SkipForward, Repeat, Cast, ListMusic, Volume2, Maximize } from "lucide-react";
+import {
+  Shuffle,
+  SkipBack,
+  Play,
+  Pause,
+  SkipForward,
+  Repeat,
+  Cast,
+  ListMusic,
+  Volume2,
+  Maximize,
+} from "lucide-react";
 import "../styles/App.css";
 
 function formatTime(seconds) {
@@ -19,9 +30,31 @@ function App() {
   const [volume, setVolume] = useState(0.5);
   const [loading, setLoading] = useState(false);
   const audioRef = useRef(new Audio());
+  const [contextMenu, setContextMenu] = useState(null);
+  const [shuffle, setShuffle] = useState(false);
 
   const tracks = selectedFolder ? selectedFolder.tracks : [];
   const currentTrack = currentIndex >= 0 ? tracks[currentIndex] : null;
+
+  const handleRightClick = (e, folder) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      folder,
+    });
+  };
+
+  const handleDeleteFolder = async () => {
+    const updated = folders.filter((f) => f.path !== contextMenu.folder.path);
+    setFolders(updated);
+    if (selectedFolder?.path == contextMenu.folder.path) {
+      setSelectedFolder(updated[0] || null);
+      setCurrentIndex(-1);
+    }
+    setContextMenu(null);
+    window.musicAPI.saveLibrary({ folders: updated });
+  };
 
   const handleImportFolder = async () => {
     const folder = await window.musicAPI.selectFolder();
@@ -29,7 +62,7 @@ function App() {
 
     const folderName = folder.split("\\").pop() || folder.split("/").pop();
 
-    // Evita importar a mesma pasta duas vezes
+    // evita importar a mesma pasta duas vezes
     if (folders.find((f) => f.path === folder)) {
       setSelectedFolder(folders.find((f) => f.path === folder));
       return;
@@ -84,10 +117,13 @@ function App() {
   };
 
   const playNext = useCallback(() => {
-    if (currentIndex < tracks.length - 1) {
+    if (shuffle) {
+      const randomIndex = Math.floor(Math.random() * tracks.length);
+      playTrack(randomIndex);
+    } else if (currentIndex < tracks.length - 1) {
       playTrack(currentIndex + 1);
     }
-  }, [currentIndex, tracks.length, playTrack]);
+  }, [currentIndex, tracks.length, playTrack, shuffle]);
 
   const playPrev = () => {
     if (currentIndex > 0) {
@@ -126,7 +162,7 @@ function App() {
     audioRef.current.volume = volume;
   }, [volume]);
 
-  // Carrega as pastas salvas ao iniciar
+  // carrega as pastas salvas ao iniciar
   useEffect(() => {
     async function restoreLibrary() {
       const saved = await window.musicAPI.loadLibrary();
@@ -138,11 +174,21 @@ function App() {
     restoreLibrary();
   }, []);
 
+  useEffect(() => {
+    const close = () => setContextMenu(null);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, []);
+
   return (
     <div className="app">
       <header className="header">
         <h1>My Player</h1>
-        <button className="import-btn" onClick={handleImportFolder} disabled={loading}>
+        <button
+          className="import-btn"
+          onClick={handleImportFolder}
+          disabled={loading}
+        >
           {loading ? "Loading..." : "Import Folder"}
         </button>
       </header>
@@ -157,15 +203,36 @@ function App() {
             <div
               key={folder.path}
               className={`sidebar-item ${selectedFolder?.path === folder.path ? "active" : ""}`}
-              onClick={() => { setSelectedFolder(folder); setCurrentIndex(-1); }}
+              onClick={() => {
+                setSelectedFolder(folder);
+                setCurrentIndex(-1);
+              }}
+              onContextMenu={(e) => handleRightClick(e, folder)} // add funcao botao direito
             >
               <div className="folder-icon"></div>
               <div>
                 <div className="folder-name">{folder.name}</div>
-                <div className="folder-count">{folder.tracks.length} músicas</div>
+                <div className="folder-count">
+                  {folder.tracks.length} músicas
+                </div>
               </div>
             </div>
           ))}
+
+          {contextMenu && (
+            <div
+              className="context-menu"
+              style={{ top: contextMenu.y, left: contextMenu.x }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="context-menu-item delete"
+                onClick={handleDeleteFolder}
+              >
+                Remove Folder
+              </button>
+            </div>
+          )}
         </aside>
 
         <main className="library">
@@ -220,7 +287,12 @@ function App() {
 
           <div className="player-center">
             <div className="controls">
-              <Shuffle size={16} className="icon-btn" />
+              <Shuffle
+                size={16}
+                className="icon-btn"
+                onClick={() => setShuffle(!shuffle)}
+                style={{ color: shuffle ? "#1db954" : "#ccc" }}
+              />
               <SkipBack size={18} className="icon-btn" onClick={playPrev} />
               <button className="play-btn" onClick={togglePlayPause}>
                 {isPlaying ? <Pause size={16} /> : <Play size={16} />}
@@ -238,7 +310,9 @@ function App() {
                 max={duration || 0}
                 value={progress}
                 onChange={handleSeek}
-                style={{ "--progress": `${duration ? (progress / duration) * 100 : 0}%` }}
+                style={{
+                  "--progress": `${duration ? (progress / duration) * 100 : 0}%`,
+                }}
               />
               <span className="time">{formatTime(duration)}</span>
             </div>
