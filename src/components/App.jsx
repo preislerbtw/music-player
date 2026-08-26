@@ -32,6 +32,7 @@ function App() {
   const audioRef = useRef(new Audio());
   const [contextMenu, setContextMenu] = useState(null);
   const [shuffle, setShuffle] = useState(false);
+  const [importProgress, setImportProgress] = useState(null);
 
   const tracks = selectedFolder ? selectedFolder.tracks : [];
   const currentTrack = currentIndex >= 0 ? tracks[currentIndex] : null;
@@ -62,7 +63,6 @@ function App() {
 
     const folderName = folder.split("\\").pop() || folder.split("/").pop();
 
-    // evita importar a mesma pasta duas vezes
     if (folders.find((f) => f.path === folder)) {
       setSelectedFolder(folders.find((f) => f.path === folder));
       return;
@@ -72,9 +72,10 @@ function App() {
     const filePaths = await window.musicAPI.scanFolder(folder);
 
     const trackList = [];
-    for (const filePath of filePaths) {
-      const meta = await window.musicAPI.getTrackMetadata(filePath);
+    for (let i = 0; i < filePaths.length; i++) {
+      const meta = await window.musicAPI.getTrackMetadata(filePaths[i]);
       trackList.push(meta);
+      setImportProgress({ current: i + 1, total: filePaths.length });
     }
 
     const newFolder = { name: folderName, path: folder, tracks: trackList };
@@ -84,6 +85,7 @@ function App() {
     setSelectedFolder(newFolder);
     setCurrentIndex(-1);
     setLoading(false);
+    setImportProgress(null);
 
     await window.musicAPI.saveLibrary({ folders: updated });
   };
@@ -103,7 +105,7 @@ function App() {
       setCurrentIndex(index);
       setIsPlaying(true);
     },
-    [tracks, volume],
+    [tracks, volume]
   );
 
   const togglePlayPause = () => {
@@ -162,7 +164,6 @@ function App() {
     audioRef.current.volume = volume;
   }, [volume]);
 
-  // carrega as pastas salvas ao iniciar
   useEffect(() => {
     async function restoreLibrary() {
       const saved = await window.musicAPI.loadLibrary();
@@ -189,7 +190,11 @@ function App() {
           onClick={handleImportFolder}
           disabled={loading}
         >
-          {loading ? "Loading..." : "Import Folder"}
+          {loading
+            ? importProgress
+              ? `Importing ${importProgress.current}/${importProgress.total}...`
+              : "Loading..."
+            : "Import Folder"}
         </button>
       </header>
 
@@ -207,7 +212,7 @@ function App() {
                 setSelectedFolder(folder);
                 setCurrentIndex(-1);
               }}
-              onContextMenu={(e) => handleRightClick(e, folder)} // add funcao botao direito
+              onContextMenu={(e) => handleRightClick(e, folder)}
             >
               <div className="folder-icon"></div>
               <div>

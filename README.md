@@ -1,16 +1,60 @@
-# React + Vite
+# Music Player
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Um player de música para desktop desenvolvido com **React, JavaScript, CSS, Phython, Vite e Electron**.
 
-Currently, two official plugins are available:
+## Status
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Projeto arquivado.**
 
-## React Compiler
+O projeto não funciona mais como originalmente planejado devido às limitações atuais do **Spotify e YouTube** relacionadas ao download de músicas.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+O desenvolvimento foi interrompido e o repositório permanece como um projeto de estudo.
 
-## Expanding the Oxlint configuration
+## Tecnologias
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+* React
+* Vite
+* JavaScript
+* Electron
+* CSS
+* Node.js
+
+## Funcionalidades desenvolvidas
+
+* Reprodução de músicas
+* Importação de pastas
+* Salvamento da biblioteca
+* Controle de volume
+* Barra de progresso
+* Capas das músicas
+* Leitura de metadados
+* Busca de capas online
+* Música anterior
+* Próxima música
+
+## Formatos suportados
+
+```text
+.mp3
+.flac
+.wav
+.m4a
+.ogg
+```
+
+## Objetivo
+
+Projeto criado para praticar:
+
+* React
+* JavaScript
+* Electron
+* APIs
+* Manipulação de arquivos
+* Desenvolvimento de aplicações desktop
+
+## Autor
+
+**Jorge Preisler**
+
+> Projeto desenvolvido para fins de estudo.

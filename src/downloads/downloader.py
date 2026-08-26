@@ -1,49 +1,37 @@
+from pytubefix import YouTube
 from pytubefix.contrib.search import Search
-from dotenv import load_dotenv
-import requests
+from spotify_scraper import SpotifyClient
 import os
-import base64
-load_dotenv()
-
-CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 
-def get_token():
-    credentials = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
-    resp = requests.post(
-        "https://accounts.spotify.com/api/token",
-        headers={"Authorization": f"Basic {credentials}"},
-        data={"grant_type": "client_credentials"},
-    )
-    resp.raise_for_status()
-    return resp.json()["access_token"]
-
-
-def pegar_musicas_da_playlist(playlist_url, token):
-    playlist_id = playlist_url.split("/")[-1].split("?")[0]
+def pegar_musicas_da_playlist(playlist_url):
     musicas = []
-    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
-    headers = {"Authorization": f"Bearer {token}"}
+    with SpotifyClient() as client:
+        playlist = client.get_playlist(playlist_url)
+        data = playlist.to_dict()
+        tracks_raw = data.get("tracks", [])
 
-    # Paginação — pega todas as músicas mesmo em playlists grandes
-    while url:
-        resp = requests.get(url, headers=headers, params={"limit": 100})
-        resp.raise_for_status()
-        data = resp.json()
+        if isinstance(tracks_raw, dict):
+            items = tracks_raw.get("items", [])
+        else:
+            items = tracks_raw
 
-        for item in data.get("items", []):
-            track = item.get("track")
+        for item in items:
+            track = item.get("track") or item.get("item") or item
             if not track or track.get("is_local"):
                 continue
             nome = track.get("name", "")
             artistas = track.get("artists", [])
             artista = artistas[0].get("name", "") if artistas else ""
-            musicas.append(f"{artista} - {nome}")
-
-        url = data.get("next")  # próxima página, None se acabou
+            if nome and artista:
+                musicas.append(f"{artista} - {nome}")
 
     return musicas
+
+
+# Ordem de tentativa: se o WEB falhar (ex: erro de throttling do YouTube),
+# tenta o próximo cliente antes de desistir da música
+CLIENTES = ["WEB", "WEB_CREATOR", "ANDROID"]
 
 
 def baixar_do_youtube(query, destination):
@@ -54,24 +42,42 @@ def baixar_do_youtube(query, destination):
         print(f"  -> Nenhum resultado encontrado para '{query}'. Pulando.")
         return
 
-    yt = busca.videos[0]
-    video = yt.streams.filter(only_audio=True).first()
+    resultado = busca.videos[0]
 
-    outFile = video.download(output_path=destination)
-    base, ext = os.path.splitext(outFile)
-    newFile = base + ".mp3"
-    os.rename(outFile, newFile)
+    ultimo_erro = None
+    for cliente in CLIENTES:
+        try:
+            yt = YouTube(resultado.watch_url, client=cliente)
+            video = yt.streams.filter(only_audio=True).first()
 
-    print(f"  -> '{yt.title}' baixada com sucesso!")
+            if video is None:
+                raise Exception("Nenhum stream de áudio disponível")
+
+            outFile = video.download(output_path=destination)
+            base, ext = os.path.splitext(outFile)
+            newFile = base + ".mp3"
+            os.rename(outFile, newFile)
+
+            print(f"  -> '{yt.title}' baixada com sucesso! (cliente: {cliente})")
+            return
+        except Exception as e:
+            ultimo_erro = e
+            print(f"  -> Falhou com cliente {cliente}: {e}. Tentando próximo...")
+
+    # Se chegou aqui, todos os clientes falharam
+    raise ultimo_erro
 
 
 if __name__ == "__main__":
     playlist_url = str(input("Cole o link da playlist do Spotify: "))
     print("Digite o destino (deixe em branco para pasta atual)")
     destination = str(input(">> ")) or "."
+    # Remove aspas que o usuário possa ter digitado/colado junto do caminho
+    destination = destination.strip().strip('"').strip("'")
+    # Garante que a pasta de destino existe
+    os.makedirs(destination, exist_ok=True)
 
-    token = get_token()
-    musicas = pegar_musicas_da_playlist(playlist_url, token)
+    musicas = pegar_musicas_da_playlist(playlist_url)
     print(f"\n{len(musicas)} músicas encontradas na playlist.\n")
 
     for musica in musicas:
