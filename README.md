@@ -17,7 +17,7 @@ Um player de música para desktop desenvolvido com React, JavaScript, CSS, Pytho
 
 </div>
 Preview
-<div align="center"> <img src="./preview.png" alt="Music Player Preview" width="100%"> </div>
+<div align="center"> <img src="./project3.png" alt="Music Player Preview" width="100%"> </div>
 Sobre o projeto
 
 O Music Player é um player de música para desktop desenvolvido com React e Electron.
