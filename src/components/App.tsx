@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import type { CSSProperties, ChangeEvent, MouseEvent } from "react";
 import {
   Shuffle,
   SkipBack,
@@ -12,8 +13,20 @@ import {
   Maximize,
 } from "lucide-react";
 import "../styles/App.css";
+import type { Folder } from "../types";
 
-function formatTime(seconds) {
+interface ContextMenuState {
+  x: number;
+  y: number;
+  folder: Folder;
+}
+
+interface ImportProgress {
+  current: number;
+  total: number;
+}
+
+function formatTime(seconds: number): string {
   if (!seconds || isNaN(seconds)) return "0:00";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
@@ -21,23 +34,25 @@ function formatTime(seconds) {
 }
 
 function App() {
-  const [folders, setFolders] = useState([]);
-  const [selectedFolder, setSelectedFolder] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.5);
-  const [loading, setLoading] = useState(false);
-  const audioRef = useRef(new Audio());
-  const [contextMenu, setContextMenu] = useState(null);
-  const [shuffle, setShuffle] = useState(false);
-  const [importProgress, setImportProgress] = useState(null);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(0);
+  const [volume, setVolume] = useState<number>(0.5);
+  const [loading, setLoading] = useState<boolean>(false);
+  const audioRef = useRef<HTMLAudioElement>(new Audio());
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [shuffle, setShuffle] = useState<boolean>(false);
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(
+    null
+  );
 
   const tracks = selectedFolder ? selectedFolder.tracks : [];
   const currentTrack = currentIndex >= 0 ? tracks[currentIndex] : null;
 
-  const handleRightClick = (e, folder) => {
+  const handleRightClick = (e: MouseEvent<HTMLDivElement>, folder: Folder) => {
     e.preventDefault();
     setContextMenu({
       x: e.clientX,
@@ -47,24 +62,28 @@ function App() {
   };
 
   const handleDeleteFolder = async () => {
+    if (!contextMenu) return;
+
     const updated = folders.filter((f) => f.path !== contextMenu.folder.path);
     setFolders(updated);
-    if (selectedFolder?.path == contextMenu.folder.path) {
+    if (selectedFolder?.path === contextMenu.folder.path) {
       setSelectedFolder(updated[0] || null);
       setCurrentIndex(-1);
     }
     setContextMenu(null);
-    window.musicAPI.saveLibrary({ folders: updated });
+    await window.musicAPI.saveLibrary({ folders: updated });
   };
 
   const handleImportFolder = async () => {
     const folder = await window.musicAPI.selectFolder();
     if (!folder) return;
 
-    const folderName = folder.split("\\").pop() || folder.split("/").pop();
+    const folderName =
+      folder.split("\\").pop() || folder.split("/").pop() || folder;
 
-    if (folders.find((f) => f.path === folder)) {
-      setSelectedFolder(folders.find((f) => f.path === folder));
+    const existing = folders.find((f) => f.path === folder);
+    if (existing) {
+      setSelectedFolder(existing);
       return;
     }
 
@@ -78,7 +97,11 @@ function App() {
       setImportProgress({ current: i + 1, total: filePaths.length });
     }
 
-    const newFolder = { name: folderName, path: folder, tracks: trackList };
+    const newFolder: Folder = {
+      name: folderName,
+      path: folder,
+      tracks: trackList,
+    };
     const updated = [...folders, newFolder];
 
     setFolders(updated);
@@ -91,7 +114,7 @@ function App() {
   };
 
   const playTrack = useCallback(
-    async (index) => {
+    async (index: number) => {
       const track = tracks[index];
       if (!track) return;
 
@@ -133,13 +156,13 @@ function App() {
     }
   };
 
-  const handleSeek = (e) => {
+  const handleSeek = (e: ChangeEvent<HTMLInputElement>) => {
     const time = Number(e.target.value);
     audioRef.current.currentTime = time;
     setProgress(time);
   };
 
-  const handleVolumeChange = (e) => {
+  const handleVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVolume(Number(e.target.value));
   };
 
@@ -315,9 +338,11 @@ function App() {
                 max={duration || 0}
                 value={progress}
                 onChange={handleSeek}
-                style={{
-                  "--progress": `${duration ? (progress / duration) * 100 : 0}%`,
-                }}
+                style={
+                  {
+                    "--progress": `${duration ? (progress / duration) * 100 : 0}%`,
+                  } as CSSProperties
+                }
               />
               <span className="time">{formatTime(duration)}</span>
             </div>
@@ -335,7 +360,7 @@ function App() {
               step="0.1"
               value={volume}
               onChange={handleVolumeChange}
-              style={{ "--progress": `${volume * 100}%` }}
+              style={{ "--progress": `${volume * 100}%` } as CSSProperties}
             />
             <Maximize size={16} className="icon-btn" />
           </div>
