@@ -3,15 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "main": "electron/main.cjs",
+  "main": "electron/dist/main.cjs",
   "scripts": {
     "dev:vite": "vite",
-    "dev": "concurrently \"npm run dev:vite\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "compile:electron": "tsc -p tsconfig.electron.json",
+    "dev": "npm run compile:electron && concurrently \"npm run dev:vite\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
     "build": "vite build",
-    "build:electron": "npm run build && electron-builder",
+    "build:electron": "npm run compile:electron && npm run build && electron-builder",
     "lint": "oxlint",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit"
   },
   "dependencies": {
     "lucide-react": "^1.28.0",
@@ -38,7 +39,7 @@
     "productName": "Music Player",
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/dist/**/*"
     ],
     "directories": {
       "output": "release"
