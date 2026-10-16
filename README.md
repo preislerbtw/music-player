@@ -1,7 +1,6 @@
 # Music Player
 
 <p align="center">
-  <strong>Your music, your way.</strong>
   <br />
   A desktop music player built with React, TypeScript, Tailwind CSS, Vite, Electron, and Python.
   <br /><br />
@@ -59,20 +58,6 @@ The project is intended to work with the following formats:
 
 Actual playback depends on Chromium/Electron audio support and the implementation used by the application.
 
-## Technologies
-
-| Technology | Purpose |
-|---|---|
-| React | User interface development and componentization |
-| TypeScript | Static typing and code organization |
-| Tailwind CSS | Utility-first styling |
-| CSS | Custom styling and visual adjustments |
-| Vite | Development server and frontend build tooling |
-| Electron | Desktop application runtime |
-| Node.js | Runtime environment and project tooling |
-| Python | Auxiliary scripts and supporting functionality |
-| `music-metadata` | Audio file metadata extraction |
-
 ## Project Structure
 
 The project separates visual components, React hooks, utilities, and Electron-specific resources.
@@ -115,19 +100,6 @@ music-player/
 └── README.md
 ```
 
-### Code Organization
-
-- **`components/`** — reusable visual components.
-- **`hooks/`** — reusable React logic related to the music player.
-- **`utils/`** — helper functions and music library management.
-- **`styles/`** — custom CSS files.
-- **`downloads/`** — auxiliary download-related scripts.
-- **`electron/`** — the main process, preload script, and Electron resources.
-- **`App.tsx`** — the main application component.
-- **`main.tsx`** — the React interface entry point.
-- **`types.ts`** — shared types and interfaces.
-- **`index.css`** — global styles and Tailwind CSS import.
-
 ## Getting Started
 
 ### Prerequisites
@@ -164,33 +136,6 @@ music-player/
 
 The development command should launch the interface and desktop application according to the project's Vite and Electron configuration.
 
-## What I Learned
-
-Developing this project provides hands-on experience with:
-
-- Building user interfaces with React.
-- Developing applications with TypeScript.
-- Componentization and code reuse.
-- State and event management.
-- Styling with CSS and Tailwind CSS.
-- Integrating Vite, React, and Electron.
-- Communication between the frontend and native system resources.
-- Handling local files and directories.
-- Audio playback and media controls.
-- Extracting media metadata.
-- Organizing code into hooks, components, and utilities.
-- Managing dependencies with npm.
-
-## Potential Future Improvements
-
-- Improve the visual experience and interface responsiveness.
-- Implement keyboard shortcuts for playback controls.
-- Improve music library persistence and management.
-- Add music search and filtering.
-- Enhance the presentation of metadata and album artwork.
-- Explore external music service integrations while respecting their APIs and terms of use.
-- Prepare packaged desktop releases for distribution.
-
 ## Author
 
 **Jorge Preisler**
@@ -198,9 +143,3 @@ Developing this project provides hands-on experience with:
 Developed as a learning and portfolio project, focusing on frontend development, TypeScript, and desktop applications with Electron.
 
 ---
-
-<p align="center">
-  <strong>Music Player</strong>
-  <br />
-  <em>Listen. Organize. Enjoy.</em>
-</p>
