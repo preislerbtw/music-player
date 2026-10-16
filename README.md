@@ -3,51 +3,53 @@
 <p align="center">
   <strong>Your music, your way.</strong>
   <br />
-  Um player de música para desktop desenvolvido com React, TypeScript, CSS, Python, Vite e Electron.
+  A desktop music player built with React, TypeScript, Tailwind CSS, Vite, Electron, and Python.
   <br /><br />
   <img src="./project3.png" alt="Music Player Preview" width="100%" />
 </p>
 
 ---
 
-## Sobre o projeto
+## About the Project
 
-O **Music Player** é uma aplicação desktop desenvolvida para reproduzir e organizar músicas armazenadas localmente no computador.
+**Music Player** is a desktop application designed to play and organize music stored locally on your computer.
 
-Com uma interface intuitiva, o aplicativo permite importar pastas de músicas, construir uma biblioteca pessoal e controlar a reprodução de arquivos de áudio em um único lugar.
+The application features a user interface built with React and TypeScript, using Electron to run as a desktop application. Its goal is to provide a simple experience for importing music folders, organizing a personal music library, and controlling playback in one place.
 
-O projeto foi desenvolvido como uma experiência prática de aprendizado, explorando a integração entre tecnologias web e recursos nativos por meio do Electron.
+The project also explores the integration of web technologies with native system resources, as well as the use of auxiliary tools for music library management.
 
-## Status do projeto
+## Project Status
 
-**Projeto arquivado — sem desenvolvimento ativo.**
+**In development — experimental project.**
 
-O desenvolvimento foi interrompido devido a limitações relacionadas à integração com serviços externos de música, especialmente Spotify e YouTube, utilizados na proposta original do projeto.
+The project is undergoing improvements to its code organization, user interface, and component integration.
 
-O player foi desenvolvido principalmente para trabalhar com arquivos de áudio locais. Portanto, o arquivamento está relacionado às funcionalidades planejadas de integração com esses serviços, e não necessariamente à reprodução de arquivos locais.
+The original proposal also considered integrations with external music services such as Spotify and YouTube. These integrations involve their own challenges, including APIs, authentication, feature availability, and access restrictions.
 
-O repositório permanece público como parte do meu portfólio e como registro do aprendizado adquirido durante o desenvolvimento.
+The application's primary focus is playing and organizing local audio files. Available features may change as development progresses.
 
-## Funcionalidades
+## Features
 
-- Reprodução de músicas armazenadas localmente
-- Importação de pastas de músicas
-- Persistência da biblioteca musical
-- Controles de reprodução
-- Avançar e voltar entre faixas
-- Controle de volume
-- Barra de progresso e duração das músicas
-- Exibição de capas de álbuns
-- Busca de capas online
-- Leitura de metadados dos arquivos de áudio
-- Organização de uma biblioteca pessoal
-- Interface dedicada para desktop
+- Import music folders.
+- Organize a local music library.
+- Display imported tracks.
+- Play audio files.
+- Playback controls.
+- Navigate between tracks.
+- Volume control.
+- Track progress bar and duration.
+- Display track information.
+- Read audio file metadata.
+- Display album artwork when available.
+- Desktop interface powered by Electron.
 
-## Formatos de áudio
+> The availability of each feature depends on its implementation in the current version of the project.
 
-O projeto foi preparado para trabalhar com os seguintes formatos:
+## Supported Audio Formats
 
-| Formato | Extensão |
+The project is intended to work with the following formats:
+
+| Format | Extension |
 |---|---|
 | MPEG Audio Layer III | `.mp3` |
 | Free Lossless Audio Codec | `.flac` |
@@ -55,92 +57,145 @@ O projeto foi preparado para trabalhar com os seguintes formatos:
 | MPEG-4 Audio | `.m4a` |
 | Ogg Vorbis | `.ogg` |
 
-A reprodução efetiva depende da implementação utilizada e do suporte de áudio disponível no ambiente.
+Actual playback depends on Chromium/Electron audio support and the implementation used by the application.
 
-## Tecnologias utilizadas
+## Technologies
 
-| Tecnologia | Utilização |
+| Technology | Purpose |
 |---|---|
-| React | Construção da interface e componentização |
-| TypeScript | Tipagem estática e organização da lógica da aplicação |
-| CSS | Estilização e layout |
-| Vite | Servidor de desenvolvimento e build |
-| Electron | Execução da aplicação como software desktop |
-| Python | Recursos auxiliares relacionados ao projeto |
-| Node.js | Ambiente de execução e integração com recursos do sistema |
-| `music-metadata` | Leitura de metadados de arquivos de áudio |
+| React | User interface development and componentization |
+| TypeScript | Static typing and code organization |
+| Tailwind CSS | Utility-first styling |
+| CSS | Custom styling and visual adjustments |
+| Vite | Development server and frontend build tooling |
+| Electron | Desktop application runtime |
+| Node.js | Runtime environment and project tooling |
+| Python | Auxiliary scripts and supporting functionality |
+| `music-metadata` | Audio file metadata extraction |
 
-## Aprendizados
+## Project Structure
 
-Durante o desenvolvimento, o projeto proporcionou experiência prática com:
-
-- Desenvolvimento de interfaces com React.
-- Organização e reutilização de componentes.
-- Tipagem estática com TypeScript.
-- Gerenciamento de estados e eventos.
-- Integração entre React, Vite e Electron.
-- Comunicação entre o processo principal do Electron e a interface.
-- Manipulação e leitura de arquivos locais.
-- Reprodução de áudio e controle de mídia.
-- Extração de metadados de arquivos.
-- Persistência de dados da aplicação.
-- Integração com serviços e fontes externas de informação.
-
-## Estrutura do projeto
-
-A estrutura principal foi organizada para separar a interface, os estilos e os recursos específicos do Electron.
+The project separates visual components, React hooks, utilities, and Electron-specific resources.
 
 ```text
 music-player/
 ├── electron/
-│   ├── main.cjs
-│   └── preload.cjs
+│   ├── dist/
+│   ├── main.cts
+│   └── preload.cts
 ├── src/
 │   ├── components/
+│   │   ├── Header.tsx
+│   │   ├── IconButton.tsx
+│   │   ├── PlayerBar.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── TrackList.tsx
+│   ├── downloads/
+│   │   └── downloader.py
+│   ├── hooks/
+│   │   └── usePlayer.ts
 │   ├── styles/
-│   └── App.tsx
+│   │   └── App.css
+│   ├── utils/
+│   │   ├── formatTime.ts
+│   │   └── useLibrary.ts
+│   ├── App.tsx
+│   ├── electron.d.ts
+│   ├── index.css
+│   ├── main.tsx
+│   ├── types.ts
+│   └── vite-env.d.ts
+├── index.html
 ├── package.json
+├── package-lock.json
+├── tsconfig.json
+├── tsconfig.electron.json
 ├── vite.config.ts
+├── project3.png
 └── README.md
 ```
 
-*Observação: ajuste a estrutura acima para corresponder aos diretórios e arquivos reais do repositório.*
+### Code Organization
 
-## Execução local
+- **`components/`** — reusable visual components.
+- **`hooks/`** — reusable React logic related to the music player.
+- **`utils/`** — helper functions and music library management.
+- **`styles/`** — custom CSS files.
+- **`downloads/`** — auxiliary download-related scripts.
+- **`electron/`** — the main process, preload script, and Electron resources.
+- **`App.tsx`** — the main application component.
+- **`main.tsx`** — the React interface entry point.
+- **`types.ts`** — shared types and interfaces.
+- **`index.css`** — global styles and Tailwind CSS import.
 
-Para executar o projeto em um ambiente de desenvolvimento, é necessário ter o Node.js e o npm instalados.
+## Getting Started
 
-1. Clone o repositório:
+### Prerequisites
+
+- [Node.js](https://nodejs.org/)
+- npm, included with Node.js
+- Python, if you use the corresponding auxiliary scripts
+
+### Installation
+
+1. Clone the repository:
 
    ```bash
-   git clone <URL_DO_REPOSITORIO>
+   git clone https://github.com/preislerbtw/music-player.git
    ```
 
-2. Entre na pasta do projeto:
+2. Navigate to the project directory:
 
    ```bash
    cd music-player
    ```
 
-3. Instale as dependências:
+3. Install the dependencies:
 
    ```bash
    npm install
    ```
 
-4. Inicie o ambiente de desenvolvimento, caso o script esteja disponível:
+4. Start the development environment:
 
    ```bash
    npm run dev
    ```
 
-**Nota:** como o projeto está arquivado, a execução depende das dependências, configurações e integrações presentes na versão atual do código.
+The development command should launch the interface and desktop application according to the project's Vite and Electron configuration.
 
-## Autor
+## What I Learned
+
+Developing this project provides hands-on experience with:
+
+- Building user interfaces with React.
+- Developing applications with TypeScript.
+- Componentization and code reuse.
+- State and event management.
+- Styling with CSS and Tailwind CSS.
+- Integrating Vite, React, and Electron.
+- Communication between the frontend and native system resources.
+- Handling local files and directories.
+- Audio playback and media controls.
+- Extracting media metadata.
+- Organizing code into hooks, components, and utilities.
+- Managing dependencies with npm.
+
+## Potential Future Improvements
+
+- Improve the visual experience and interface responsiveness.
+- Implement keyboard shortcuts for playback controls.
+- Improve music library persistence and management.
+- Add music search and filtering.
+- Enhance the presentation of metadata and album artwork.
+- Explore external music service integrations while respecting their APIs and terms of use.
+- Prepare packaged desktop releases for distribution.
+
+## Author
 
 **Jorge Preisler**
 
-Desenvolvido como projeto de estudo, com foco no aprendizado de React, TypeScript e desenvolvimento de aplicações desktop com Electron.
+Developed as a learning and portfolio project, focusing on frontend development, TypeScript, and desktop applications with Electron.
 
 ---
 
