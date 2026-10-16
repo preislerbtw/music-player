@@ -1,4 +1,4 @@
-* {
+/* * {
   box-sizing: border-box;
 }
 
@@ -390,4 +390,52 @@ body {
 .context-menu-item.delete:hover {
   background: #01ff6b;
   color: #298b4b;
+} */
+
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0d0d0d;
+  --color-surface: #1a1a1a;
+  --color-surface-active: #1a2e20;
+  --color-line: #1f1f1f;
+  --color-brand: #1db954;
+  --color-brand-hover: #1ed760;
+  --color-muted: #999;
+}
+
+@layer base {
+  body {
+    background: var(--color-bg);
+    color: #f0f0f0;
+  }
+}
+
+/* Sliders (seek e volume): thumb e gradiente de progresso não têm utility pronta */
+@layer components {
+  .range {
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    cursor: pointer;
+    background: linear-gradient(
+      to right,
+      #fff var(--progress),
+      #444 var(--progress)
+    );
+  }
+
+  .range::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    background: #fff;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .range:hover::-webkit-slider-thumb {
+    opacity: 1;
+  }
 }

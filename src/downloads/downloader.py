@@ -34,7 +34,7 @@ def pegar_musicas_da_playlist(playlist_url):
     return musicas
 
 
-# Ordem de tentativa dos clientes do YouTube
+# ordem de tentativa dos clientes do YouTube
 CLIENTES = ["WEB", "WEB_CREATOR", "ANDROID"]
 
 
@@ -63,7 +63,7 @@ def baixar_do_youtube(query, destination):
             base, ext = os.path.splitext(out_file)
             new_file = base + ".mp3"
 
-            # Evita renomear o arquivo caso já tenha a extensão MP3
+            # evita renomear o arquivo caso já tenha a extensão MP3
             if ext.lower() != ".mp3":
                 os.rename(out_file, new_file)
 
@@ -105,10 +105,10 @@ if __name__ == "__main__":
     print("Digite o destino (deixe em branco para pasta atual)")
     destination = input(">> ").strip() or "."
 
-    # Remove aspas do caminho, se existirem
+    # remove aspas do caminho, se existirem
     destination = destination.strip('"').strip("'")
 
-    # Garante que a pasta de destino existe
+    # garante que a pasta de destino existe
     os.makedirs(destination, exist_ok=True)
 
     print("\nObtendo músicas da playlist...")
@@ -146,11 +146,11 @@ if __name__ == "__main__":
             falhas += 1
             print(f"  -> Erro ao baixar '{musica}': {e}")
 
-        # Calcula o tempo gasto nesta música
+        # calcula o tempo gasto nesta música
         tempo_musica = time.time() - inicio_musica
         tempos.append(tempo_musica)
 
-        # Calcula a estimativa de tempo restante
+        # calcula a estimativa de tempo restante
         tempo_decorrido = time.time() - inicio_total
         media = sum(tempos) / len(tempos)
         restantes = total - i
@@ -167,7 +167,7 @@ if __name__ == "__main__":
         print(f"Downloads com sucesso: {sucessos}")
         print(f"Falhas: {falhas}")
 
-    # Resumo final
+    # resumo final
     tempo_total = time.time() - inicio_total
 
     print("\n" + "=" * 50)
